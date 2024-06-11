@@ -102,10 +102,8 @@ def save_video(video_tensor, audio_path, output_path, fps=30.0):
            f'-map 0:v -map 1:a -c:v h264 -shortest -y "{output_path}" -loglevel quiet')
     os.system(cmd)
 
-    if os.name == 'nt':  # Windows
-        os.system(f'del /q "{temp_output_path}"')
-    else:  # Ubuntu and other Unix-based systems
-        os.system(f'rm -rf "{temp_output_path}"')
+    os.remove(temp_output_path)
+
 
 
 def compute_dist(x1, y1, x2, y2):
