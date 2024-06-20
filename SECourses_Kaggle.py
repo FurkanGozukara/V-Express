@@ -193,7 +193,13 @@ def generate_output_video(reference_image_path, audio_path, kps_path, output_pat
     print("auto cropping...")
     if auto_crop:
         auto_crop_image(reference_image_path,crop_expansion, crop_size=(crop_width, crop_height))
+    print(f"Memory reserved before clearing: {torch.cuda.memory_reserved()} bytes")
+    print(f"Memory allocated before clearing: {torch.cuda.memory_allocated()} bytes")
     
+    torch.cuda.empty_cache()
+    
+    print(f"Memory reserved after clearing: {torch.cuda.memory_reserved()} bytes")
+    print(f"Memory allocated after clearing: {torch.cuda.memory_allocated()} bytes")
     print("starting inference...")
     command = [
         python_executable, "inference.py",
