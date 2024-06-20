@@ -88,13 +88,8 @@ def generate_kps_sequence_and_audio(video_path, kps_sequence_save_path, audio_sa
     subprocess.call(command)
 
 def auto_crop_image(image_path, expand_percent, crop_size=(512, 512)):
-    # Check if CUDA is available
-    if torch.cuda.is_available():
-        device = 'cuda'
-        print("Using GPU for RetinaFace detection.")
-    else:
-        device = 'cpu'
-        print("Using CPU for RetinaFace detection.")
+    device = 'cpu'
+    print("Using CPU for RetinaFace detection.")
 
     # Load image
     img = Image.open(image_path)
