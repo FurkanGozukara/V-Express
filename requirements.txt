@@ -2,7 +2,8 @@ diffusers==0.24.0
 imageio-ffmpeg==0.4.9
 insightface==0.7.3
 omegaconf==2.2.3
-onnxruntime==1.16.3
+onnx==1.14.0
+onnxruntime-gpu==1.16.3
 safetensors==0.4.2
 torch==2.0.1
 torchaudio==2.0.2
@@ -12,3 +13,9 @@ einops==0.4.1
 tqdm==4.66.4
 xformers==0.0.22
 av==11.0.0
+gradio
+retina-face
+tf-keras
+filetype
+bitsandbytes==0.43.0
+accelerate

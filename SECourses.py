@@ -189,7 +189,7 @@ def auto_crop_image(image_path, expand_percent, crop_size=(512, 512)):
     return resized_img
      
 
-def generate_output_video(reference_image_path, audio_path, kps_path, output_path, retarget_strategy, num_inference_steps, reference_attention_weight, audio_attention_weight, auto_crop, crop_width, crop_height, crop_expansion,image_width,image_height):
+def generate_output_video(reference_image_path, audio_path, kps_path, output_path, retarget_strategy, num_inference_steps, reference_attention_weight, audio_attention_weight, auto_crop, crop_width, crop_height, crop_expansion,image_width,image_height, low_vram):
     print("auto cropping...")
     if auto_crop:
         auto_crop_image(reference_image_path,crop_expansion, crop_size=(crop_width, crop_height))
@@ -208,6 +208,9 @@ def generate_output_video(reference_image_path, audio_path, kps_path, output_pat
         "--image_width", str(image_width),
         "--image_height", str(image_height)
     ]
+
+    if low_vram:  # Add the --save_gpu_memory flag if Low VRAM is checked
+        command.append("--save_gpu_memory")
     
     with open("executed_command.txt", "w") as file:
         file.write(" ".join(command))
@@ -223,7 +226,7 @@ def sanitize_folder_name(name):
     return sanitized_name
 
 # Function to handle the input and generate the output
-def process_input(reference_image, target_input, retarget_strategy, num_inference_steps, reference_attention_weight, audio_attention_weight, auto_crop, crop_width, crop_height, crop_expansion,image_width,image_height):
+def process_input(reference_image, target_input, retarget_strategy, num_inference_steps, reference_attention_weight, audio_attention_weight, auto_crop, crop_width, crop_height, crop_expansion,image_width,image_height,low_vram):
     # Create temp_process directory for intermediate files
     temp_process_dir = "temp_process"
     os.makedirs(temp_process_dir, exist_ok=True)
@@ -266,7 +269,7 @@ def process_input(reference_image, target_input, retarget_strategy, num_inferenc
     output_path = os.path.join(output_dir, f"{output_file_name}{output_file_count:04d}{output_file_ext}")
 
     
-    output_video_path, cropped_image_path = generate_output_video(reference_image, audio_path, kps_path, output_path, retarget_strategy, num_inference_steps, reference_attention_weight, audio_attention_weight, auto_crop,crop_width,crop_height, crop_expansion,image_width,image_height)
+    output_video_path, cropped_image_path = generate_output_video(reference_image, audio_path, kps_path, output_path, retarget_strategy, num_inference_steps, reference_attention_weight, audio_attention_weight, auto_crop,crop_width,crop_height, crop_expansion,image_width,image_height,low_vram)
     
     return output_video_path, cropped_image_path
 
@@ -279,6 +282,7 @@ def launch_interface():
             with gr.Column():
                 input_image = gr.Image(label="Reference Image", format="png", type="filepath", height=512)
                 generate_button = gr.Button("Generate Talking Video")
+                low_vram = gr.Checkbox(label="Low VRAM - Greatly reduces VRAM usage but takes longer", value=False,visible=False)
                 crop_button = gr.Button("Crop Image")
                 with gr.Row():
 
@@ -364,7 +368,8 @@ def launch_interface():
                 crop_height,
                 crop_expansion,
                 image_width,
-                image_height
+                image_height,
+                low_vram
             ],
             outputs=[output_video, output_image]
         )
