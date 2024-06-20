@@ -88,8 +88,13 @@ def generate_kps_sequence_and_audio(video_path, kps_sequence_save_path, audio_sa
     subprocess.call(command)
 
 def auto_crop_image(image_path, expand_percent, crop_size=(512, 512)):
-    device = 'cpu'
-    print("Using CPU for RetinaFace detection.")
+    # Check if CUDA is available
+    if torch.cuda.is_available():
+        device = 'cuda'
+        print("Using GPU for RetinaFace detection.")
+    else:
+        device = 'cpu'
+        print("Using CPU for RetinaFace detection.")
 
     # Load image
     img = Image.open(image_path)
@@ -183,7 +188,7 @@ def auto_crop_image(image_path, expand_percent, crop_size=(512, 512)):
     resized_img.save(image_path, format='PNG')
 
     # Explicitly delete variables to free memory
-    del img, assumed_head_img, cropped_img, final_cropped_img, resized_img
+    del img, assumed_head_img, cropped_img, final_cropped_img
     torch.cuda.empty_cache()  # Clear CUDA cache
     gc.collect()  # Run garbage collection
 
