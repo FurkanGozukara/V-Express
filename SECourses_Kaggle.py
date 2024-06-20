@@ -9,7 +9,7 @@ import re
 import sys
 import torch
 import argparse
-
+import gc
 import platform, os
 
 def open_folder():
@@ -186,8 +186,14 @@ def auto_crop_image(image_path, expand_percent, crop_size=(512, 512)):
 
     # Save the resized image as PNG
     resized_img.save(image_path, format='PNG')
+
+    # Explicitly delete variables to free memory
+    del img, assumed_head_img, cropped_img, final_cropped_img, resized_img
+    torch.cuda.empty_cache()  # Clear CUDA cache
+    gc.collect()  # Run garbage collection
+
     return resized_img
-     
+
 
 def generate_output_video(reference_image_path, audio_path, kps_path, output_path, retarget_strategy, num_inference_steps, reference_attention_weight, audio_attention_weight, auto_crop, crop_width, crop_height, crop_expansion,image_width,image_height, low_vram):
     print("auto cropping...")
