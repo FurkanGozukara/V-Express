@@ -1,3 +1,6 @@
+# Auto Installers : https://www.patreon.com/posts/105251204
+# This repo is for premium scripts : https://www.patreon.com/posts/105251204
+
 ---
 tags:
   - text-to-image
