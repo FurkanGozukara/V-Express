@@ -1,3 +1,4 @@
+from ast import arg
 import os
 import subprocess
 import gradio as gr
@@ -9,7 +10,7 @@ import re
 import sys
 import torch
 import argparse
-import gc
+
 import platform, os
 
 def open_folder():
@@ -42,6 +43,7 @@ def display_media(file):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--share", type=str, default=False, help="Set to True to share the app publicly.")
+parser.add_argument("--retina_cpu", type=str, default=False, help="For Kaggle")
 args = parser.parse_args()
 
 
@@ -95,7 +97,9 @@ def auto_crop_image(image_path, expand_percent, crop_size=(512, 512)):
     else:
         device = 'cpu'
         print("Using CPU for RetinaFace detection.")
-
+    if(args.retina_cpu):
+        device = 'cpu'
+        print("Using CPU for RetinaFace detection.")
     # Load image
     img = Image.open(image_path)
 
@@ -186,26 +190,14 @@ def auto_crop_image(image_path, expand_percent, crop_size=(512, 512)):
 
     # Save the resized image as PNG
     resized_img.save(image_path, format='PNG')
-
-    # Explicitly delete variables to free memory
-    del img, assumed_head_img, cropped_img, final_cropped_img
-    torch.cuda.empty_cache()  # Clear CUDA cache
-    gc.collect()  # Run garbage collection
-
     return resized_img
-
+     
 
 def generate_output_video(reference_image_path, audio_path, kps_path, output_path, retarget_strategy, num_inference_steps, reference_attention_weight, audio_attention_weight, auto_crop, crop_width, crop_height, crop_expansion,image_width,image_height, low_vram):
     print("auto cropping...")
     if auto_crop:
         auto_crop_image(reference_image_path,crop_expansion, crop_size=(crop_width, crop_height))
-    print(f"Memory reserved before clearing: {torch.cuda.memory_reserved()} bytes")
-    print(f"Memory allocated before clearing: {torch.cuda.memory_allocated()} bytes")
     
-    torch.cuda.empty_cache()
-    
-    print(f"Memory reserved after clearing: {torch.cuda.memory_reserved()} bytes")
-    print(f"Memory allocated after clearing: {torch.cuda.memory_allocated()} bytes")
     print("starting inference...")
     command = [
         python_executable, "inference.py",
@@ -221,8 +213,8 @@ def generate_output_video(reference_image_path, audio_path, kps_path, output_pat
         "--image_height", str(image_height)
     ]
 
-    command.append("--save_gpu_memory")
-    command.append("--do_multi_devices_inference")
+    if low_vram:  # Add the --save_gpu_memory flag if Low VRAM is checked
+        command.append("--save_gpu_memory")
     
     with open("executed_command.txt", "w") as file:
         file.write(" ".join(command))
