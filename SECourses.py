@@ -1,3 +1,4 @@
+from ast import arg
 import os
 import subprocess
 import gradio as gr
@@ -9,6 +10,7 @@ import re
 import sys
 import torch
 import argparse
+import tensorflow as tf
 
 import platform, os
 
@@ -42,6 +44,7 @@ def display_media(file):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--share", type=str, default=False, help="Set to True to share the app publicly.")
+parser.add_argument("--retina_cpu", type=str, default=False, help="For Kaggle")
 args = parser.parse_args()
 
 
@@ -89,18 +92,24 @@ def generate_kps_sequence_and_audio(video_path, kps_sequence_save_path, audio_sa
 
 def auto_crop_image(image_path, expand_percent, crop_size=(512, 512)):
     # Check if CUDA is available
+    img = Image.open(image_path)
     if torch.cuda.is_available():
         device = 'cuda'
         print("Using GPU for RetinaFace detection.")
     else:
         device = 'cpu'
         print("Using CPU for RetinaFace detection.")
-
+    if(args.retina_cpu):
+        print("Using CPU for RetinaFace detection.")
+        with tf.device('/CPU:0'):
+            faces = RetinaFace.detect_faces(image_path)
+    else:
+        faces = RetinaFace.detect_faces(image_path)
     # Load image
-    img = Image.open(image_path)
+
 
     # Perform face detection
-    faces = RetinaFace.detect_faces(image_path)
+    
 
     if not faces:
         print("No faces detected.")
