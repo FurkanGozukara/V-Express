@@ -19,3 +19,4 @@ tf-keras
 filetype
 bitsandbytes==0.43.0
 accelerate
+huggingface-hub==0.25.1
