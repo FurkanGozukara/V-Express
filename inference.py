@@ -70,7 +70,7 @@ def parse_args():
 
 def load_reference_net(unet_config_path, reference_net_path, dtype, device):
     reference_net = UNet2DConditionModel.from_config(unet_config_path).to(dtype=dtype, device=device)
-    reference_net.load_state_dict(torch.load(reference_net_path, map_location="cpu"), strict=False)
+    reference_net.load_state_dict(torch.load(reference_net_path, map_location="cpu", weights_only=False), strict=False)
     print(f'Loaded weights of Reference Net from {reference_net_path}.')
     return reference_net
 
@@ -81,10 +81,10 @@ def load_denoising_unet(inf_config_path, unet_config_path, denoising_unet_path, 
         unet_config_path,
         unet_additional_kwargs=inference_config.unet_additional_kwargs,
     ).to(dtype=dtype, device=device)
-    denoising_unet.load_state_dict(torch.load(denoising_unet_path, map_location="cpu"), strict=False)
+    denoising_unet.load_state_dict(torch.load(denoising_unet_path, map_location="cpu", weights_only=False), strict=False)
     print(f'Loaded weights of Denoising U-Net from {denoising_unet_path}.')
 
-    denoising_unet.load_state_dict(torch.load(motion_module_path, map_location="cpu"), strict=False)
+    denoising_unet.load_state_dict(torch.load(motion_module_path, map_location="cpu", weights_only=False), strict=False)
     print(f'Loaded weights of Denoising U-Net Motion Module from {motion_module_path}.')
 
     return denoising_unet
@@ -92,7 +92,7 @@ def load_denoising_unet(inf_config_path, unet_config_path, denoising_unet_path, 
 
 def load_v_kps_guider(v_kps_guider_path, dtype, device):
     v_kps_guider = VKpsGuider(320, block_out_channels=(16, 32, 96, 256)).to(dtype=dtype, device=device)
-    v_kps_guider.load_state_dict(torch.load(v_kps_guider_path, map_location="cpu"))
+    v_kps_guider.load_state_dict(torch.load(v_kps_guider_path, map_location="cpu", weights_only=False))
     print(f'Loaded weights of V-Kps Guider from {v_kps_guider_path}.')
     return v_kps_guider
 
@@ -118,7 +118,7 @@ def load_audio_projection(
         ff_mult=4,
         max_seq_len=inp_seq_len,
     ).to(dtype=dtype, device=device)
-    audio_projection.load_state_dict(torch.load(audio_projection_path, map_location='cpu'))
+    audio_projection.load_state_dict(torch.load(audio_projection_path, map_location='cpu', weights_only=False))
     print(f'Loaded weights of Audio Projection from {audio_projection_path}.')
     return audio_projection
 
@@ -232,7 +232,7 @@ def main():
     kps_sequence = None
     if args.kps_path != "":
         assert os.path.exists(args.kps_path), f'{args.kps_path} does not exist'
-        kps_sequence = torch.tensor(torch.load(args.kps_path))  # [len, 3, 2]
+        kps_sequence = torch.tensor(torch.load(args.kps_path, weights_only=False))  # [len, 3, 2]
         print(f'The original length of kps sequence is {kps_sequence.shape[0]}.')
 
         if kps_sequence.shape[0] > video_length:
